@@ -1,0 +1,33 @@
+upstream server-api {
+  server 127.0.0.1:8080;
+  keepalive 64;
+}
+
+server {
+  listen 80;
+  listen [::]:80;
+
+  root %DIST_PATH%;
+
+  client_max_body_size 0;
+  add_header X-Frame-Options "SAMEORIGIN";
+  fastcgi_read_timeout 300;
+  proxy_read_timeout 300;
+
+  index index.html;
+
+  server_name example.com;
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+
+  location /api {
+    proxy_pass http://server-api/api;
+  }
+
+  location @fallback {
+    proxy_pass http://server-api;
+  }
+
+}
